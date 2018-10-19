@@ -25,14 +25,14 @@
   "dependencies": {
     "image-size": "^0.4.0",
     "imagesize": "~1.0.0",
-    "mime": "~1.2.11",
-    "mustache": "~0.8.1",
+    "mime": "^2.3.1",
+    "mustache": "^3.0.0",
     "svgo": "^0.5.0",
     "through": "~2.3.4",
     "vinyl": "^2.2.0"
   },
   "devDependencies": {
-    "mocha": "~1.18.2",
+    "mocha": "^5.2.0",
     "should": "~3.2.0-beta1",
     "postcss": "~0.3.4"
   },

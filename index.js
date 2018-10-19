@@ -22,14 +22,14 @@ module.exports = function(opts) {
 	var sufix = opts.sufix !== undefined ?  opts.sufix : ')';
 
 	var bufferContents = function(file) {
-		var type = mime.lookup(file.path);
+		var type = mime.getType(file.path);
 		var dim = sizeOf(file.path);
 
 		if(type !== 'image/svg+xml') {
 			// console.log(imgData, dim);
 			dim.data = [
 				prefix + 'data:',
-				mime.lookup(dim.type),
+				mime.getType(dim.type),
 				';base64,',
 				file.contents.toString('base64'),
 				sufix
