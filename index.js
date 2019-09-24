@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var sizeOf = require('image-size');
 var mustache = require('mustache');
-var through = require('through');
+var through = require('through2');
 var Vinyl = require('vinyl');
 var mime = require('mime');
 var SVGO = require('svgo');
@@ -21,12 +21,11 @@ module.exports = function(opts) {
 	var prefix = opts.prefix !== undefined ?  opts.prefix : 'url(';
 	var sufix = opts.sufix !== undefined ?  opts.sufix : ')';
 
-	var bufferContents = function(file) {
+	var bufferContents = function(file, enc, callback) {
 		var type = mime.getType(file.path);
 		var dim = sizeOf(file.path);
 
 		if(type !== 'image/svg+xml') {
-			// console.log(imgData, dim);
 			dim.data = [
 				prefix + 'data:',
 				mime.getType(dim.type),
@@ -35,9 +34,10 @@ module.exports = function(opts) {
 				sufix
 			].join('');
 			dim.name = path.basename(file.path, '.' + dim.type);
-			buffer.push(dim);
+			buffer.push(dim)
+			callback()
 		} else if(type === 'image/svg+xml') {
-			svgo.optimize(file.contents.toString(), function(res) {
+			svgo.optimize(file.contents.toString()).then(res => {
 				dim = {
 					width: dim.width,
 					height: dim.height,
@@ -49,14 +49,15 @@ module.exports = function(opts) {
 					format: 'svg',
 					name: path.basename(file.path, '.svg')
 				};
-				buffer.push(dim);
+				buffer.push(dim)
+				callback()
 			});
 		}
 	};
 
 	var endStream = function() {
 		this.emit('data', new Vinyl({
-			  contents: new Buffer(mustache.render(tpl, {
+			  contents: Buffer.from(mustache.render(tpl, {
 				  items: buffer
 			  }), 'utf8'),
 			  path: opts.styleName
@@ -64,5 +65,5 @@ module.exports = function(opts) {
 		this.emit('end');
 	};
 
-	return new through(bufferContents, endStream);
+	return new through.obj(bufferContents, endStream);
 };

@@ -1,3 +1,5 @@
+var { Readable } = require('stream')
+
 var baseimg = require('../');
 var Vinyl = require('vinyl');
 var should = require('should');
@@ -19,7 +21,7 @@ var testCssSelector = function(rule, expect) {
 describe('gulp-baseimg', function() {
 
 	describe('baseimg()', function() {
-		it('should compile three images in signle stylesheet', function() {
+		it('should compile three images in single stylesheet', function() {
 			var stream = baseimg({
 				styleTemplate: './test/fixtures/tmp.css.mustache'
 			});
@@ -33,6 +35,13 @@ describe('gulp-baseimg', function() {
 				{width: '14px', height: '13px'},
 				{width: '14px', height: '13px'},
 			];
+			var images = [img1, img2, img3, img4]
+			var imageStream = new Readable({
+				objectMode: true,
+				read() {
+					this.push(images.length ? images.shift() : null)
+				}
+			})
 
 			stream.on('data', function(newFile) {
 				var css = postcss.parse(newFile.contents.toString());
@@ -51,16 +60,10 @@ describe('gulp-baseimg', function() {
 							}
 						});
 					});
-
 				});
-
 			});
 
-			stream.write(img1);
-			stream.write(img2);
-			stream.write(img3);
-			stream.write(img4);
-			stream.end();
+			imageStream.pipe(stream)
 		});
 	});
 
